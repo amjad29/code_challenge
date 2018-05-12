@@ -1,7 +1,7 @@
 import Express from 'express';
 import bodyParser from 'body-parser';
-//import grant from './api/grant';
-//import revoke from './api/revoke';
+import grant from '../api/grant';
+import revoke from '../api/revoke';
 const app = new Express();
 
 function toCallBack(promise) {
@@ -13,8 +13,8 @@ function toCallBack(promise) {
 
 app.use(bodyParser.json());
 
-// app.put('/grant', toCallBack(grant));
+app.put('/grant', toCallBack(grant));
 
-// app.put('/revoke', toCallBack(revoke));
+app.put('/revoke', toCallBack(revoke));
 
 export default app;

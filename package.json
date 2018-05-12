@@ -4,7 +4,7 @@
   "description": "iflix Coding Assignment",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "gulp test",
     "start": "babel-node ./src/server.js"
   },
   "author": "",
@@ -13,7 +13,8 @@
     "babel-polyfill": "^6.23.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
-    "merge-stream": "^1.0.1"
+    "merge-stream": "^1.0.1",
+    "node-fetch": "^2.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.2.0",
@@ -28,7 +29,6 @@
     "babel-plugin-transform-regenerator": "^6.5.2",
     "babel-preset-env": "^1.6.0",
     "chai": "^2.1.2",
-    "sinon": "^1.17.5",
     "eslint": "^3.17.1",
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.1",
@@ -37,6 +37,8 @@
     "gulp-istanbul-enforcer": "^1.0.3",
     "gulp-mocha": "^2.0.0",
     "mocha": "^2.2.1",
-    "require-dir": "^0.3.2"
+    "mock-fs": "^4.5.0",
+    "require-dir": "^0.3.2",
+    "sinon": "^1.17.5"
   }
 }

@@ -16,69 +16,93 @@ function isValidPeriod(period){
 }
 
 function addClientToPartner(number, partnerName, period, date){
-  return new Promise(resolve => {
-    const data = JSON.parse(fs.readFileSync(`${dataRootFile}${companyUsers}`, 'utf8'));
+  return new Promise((resolve, reject) => {
+    try {
+      const data = JSON.parse(fs.readFileSync(`${dataRootFile}${companyUsers}`, 'utf8'));
 
-    if (data && data[number]) {
-      if (data[number].expireDate > date) {
-        resolve (false);
+      if (data && data[number]) {
+        if (data[number].expireDate > date) {
+          resolve(false);
+        }
       }
+
+      const expireDate = new Date(new Date(date).setMonth(new Date(date).getMonth() + period)).toISOString();
+      const newRecord = new Object();
+
+      newRecord[number] = {
+        partnerName,
+        expireDate
+      };
+
+      fs.writeFileSync(`${dataRootFile}${companyUsers}`, JSON.stringify({ ...data, ...newRecord }))
+      resolve(true);
+
+    } catch(error) {
+      console.error('error==>', error, ', number ==>', number)
+      reject(error)
     }
 
-    const expireDate = new Date(new Date(date).setMonth(new Date(date).getMonth() + period)).toISOString();
-    const newRecord = new Object();
-
-    newRecord[number] = {
-      partnerName,
-      expireDate
-    };
-
-    fs.writeFileSync(`${dataRootFile}${companyUsers}`, JSON.stringify({ ...data, ...newRecord }))
-    resolve(true);
   });
 }
 
 function addOffer(number, companyName, accountIndex, period){
-  return new Promise(resolve => {
-    const data = JSON.parse(fs.readFileSync(`${dataRootFile}${offersList}`, 'utf8'));
-    const user = accountList.users[accountIndex]
+  return new Promise((resolve, reject) => {
+    try {
+      const data = JSON.parse(fs.readFileSync(`${dataRootFile}${offersList}`, 'utf8'));
+      const user = accountList.users[accountIndex]
 
-    if (data && data.subscriptions[user.name]) {
-      if (data.subscriptions[user.name][companyName]){
-        data.subscriptions[user.name][companyName] = data.subscriptions[user.name][companyName] + period;
+      if (data && data.subscriptions[user.name]) {
+        if (data.subscriptions[user.name][companyName]) {
+          data.subscriptions[user.name][companyName] = data.subscriptions[user.name][companyName] + period;
+        } else {
+
+          data.subscriptions[user.name] = {
+            ...data.subscriptions[user.name],
+            [companyName]: period
+          }
+        }
+
       } else {
-
-        data.subscriptions[user.name] = {
-          ...data.subscriptions[user.name],
-          [companyName]: period
+        data.subscriptions = {
+          ...data.subscriptions,
+          [user.name]: {
+            [companyName]: period
+          }
         }
       }
-     
-    }else{
-      data.subscriptions = {
-        ...data.subscriptions,
-        [user.name]: {
-          [companyName]: period
-        }      
-      }
+
+      fs.writeFileSync(`${dataRootFile}${offersList}`, JSON.stringify({ ...data }));
+      resolve(true)
+    } catch(error){
+      console.error('error==>', error, ', number ==>', number)
+      reject(error)
     }
-    
-    fs.writeFileSync(`${dataRootFile}${offersList}`, JSON.stringify({ ...data }))
+
   })
 }
 
 export default async function (req, res) {
 
   const { clientsList, companyName} = req.body;
- 
-  
-  clientsList.forEach(async(client) => {
-    if (isValidPeriod(client.period)){
-      const { isExist, accountIndex} = existInIflixRecord(client.number);
-      if (isExist && await addClientToPartner(client.number, companyName, client.period, client.date)){
-        await addOffer(client.number, companyName, accountIndex, client.period);
-      }      
-    } 
-  });
+
+  try {
+
+    clientsList.forEach(async (client) => {
+      if (isValidPeriod(client.period)) {
+
+        const { isExist, accountIndex } = existInIflixRecord(client.number);
+        
+        if (isExist && await addClientToPartner(client.number, companyName, client.period, client.date)) {
+          await addOffer(client.number, companyName, accountIndex, client.period);
+        }  
+      } 
+    });
+
+    res.status(200).send();
+  } catch(error){
+    console.error('error==>', error)
+    res.status(400).send();
+  }
+
 
 }

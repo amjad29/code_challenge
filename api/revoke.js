@@ -32,9 +32,11 @@ function revokeOffer(number, partnerName, date){
 }
 
 export default async function (req, res) {
-  
-  clientsList.forEach(async (client) => {
-    await revokeOffer(client.number, partnerName, client.date)
+  const { clientsList, companyName } = req.body;
 
+  clientsList.forEach(async (client) => {
+    await revokeOffer(client.number, companyName, client.date)
   });
+  res.status(200).send();
+
 }
